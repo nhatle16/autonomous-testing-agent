@@ -1,0 +1,77 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Packaging and build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+.wheelhouse/
+
+# Test and coverage reports
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+pytest.xml
+junit.xml
+
+# Local databases and runtime state
+*.db
+*.sqlite
+*.sqlite3
+instance/
+.runtime/
+checkpoints/
+
+# Generated test files and temporary execution artifacts
+.generated_tests/
+test_output/
+tmp/
+temp/
+
+# Hugging Face / Transformers model caches
+.cache/
+.cache/huggingface/
+HF_HOME/
+models/
+*.safetensors
+*.gguf
+
+# Logs
+*.log
+logs/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Docker and local deployment overrides
+.env.docker
+compose.override.yaml
