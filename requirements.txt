@@ -1,0 +1,8 @@
+langgraph
+langchain-huggingface
+langchain-ollama
+huggingface_hub
+transformers
+pytest
+coverage
+docker
