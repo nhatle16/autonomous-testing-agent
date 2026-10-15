@@ -1,4 +1,5 @@
 langgraph
+langchain
 langchain-huggingface
 langchain-ollama
 huggingface_hub
