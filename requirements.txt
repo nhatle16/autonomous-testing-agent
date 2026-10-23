@@ -2,8 +2,12 @@ langgraph
 langchain
 langchain-huggingface
 langchain-ollama
+langchain-google-genai
+langchain-openai
 huggingface_hub
 transformers
+ollama
+ruff
 pytest
 python-dotenv
 coverage
