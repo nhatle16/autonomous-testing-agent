@@ -12,6 +12,18 @@ def _describe_function(node: ast.FunctionDef) -> dict:
         "arguments": [arg.arg for arg in parameters]
     }
 
+def read_input(text: str | None = None,
+               path: str | None = None):
+    
+    if text is not None:
+        source = text
+    elif path is not None:
+        source = Path(path).read_text(encoding="utf-8")
+    else:
+        raise ValueError("Provide code or a file")
+    
+    return read_source_code(source)
+
 def read_source_code(path: str):
     """Read a file from the provided path and parse its AST.
 
