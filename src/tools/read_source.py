@@ -1,7 +1,18 @@
 import ast
 from pathlib import Path
 
-def read_source_code(path: str) -> dict:
+
+def _describe_function(node: ast.FunctionDef) -> dict:
+    parameters = [arg for arg in node.args.args]
+    description = ast.get_docstring(node)
+
+    return {
+        "name": node.name,
+        "docstring": description,
+        "arguments": [arg.arg for arg in parameters]
+    }
+
+def read_source_code(path: str):
     """Read a file from the provided path and parse its AST.
 
     Args:
@@ -17,27 +28,20 @@ def read_source_code(path: str) -> dict:
     except SyntaxError as e:
         return {"error": f"{path}:{e.lineno}: {e.msg}"}
 
-    # Create a list to hold the functions and classes found in the AST
-    functions, classes, imports, others = [], [], [], []
+    # Keep the function nodes
+    functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
 
-    for node in tree.body:
-        if isinstance(node, ast.FunctionDef):
-            functions.append(node)
-        elif isinstance(node, ast.ClassDef):
-            classes.append(node)
-        elif isinstance(node, (ast.Import, ast.ImportFrom)):
-            imports.append(node)
-        else:
-            others.append(node)
-
-    return {"path": path, "ast": tree, "functions": functions, "classes": classes, "imports": imports, "others": others}
+    results = [_describe_function(func) for func in functions]
+    return results
 
 
-source_ast = read_source_code("src/samples/sample1.py")
-for key in {"functions", "classes", "imports", "others"}:
-    print(f"\n{key.upper()}:")
-    value = source_ast.get(key)
-    if isinstance(value, list) and len(value) > 0:
-        print(ast.dump(value[0], indent=4))
-    else:
-        print(value)
+source_parsed = read_source_code("src/samples/sample2.py")
+
+i = 1
+for func in source_parsed:
+    print(f"----- FUNCTION {i} -----")
+    print(f"Function name: {func['name']}")
+    print(f"Docstring: {func['docstring']}")
+    print(f"Arguments: {func['arguments']}")
+    print()
+    i += 1
