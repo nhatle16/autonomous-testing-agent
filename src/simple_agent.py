@@ -3,6 +3,8 @@ from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from src.tools.read_source import read_input
+
 load_dotenv()
 
 chat_model = ChatGoogleGenerativeAI(
@@ -11,7 +13,7 @@ chat_model = ChatGoogleGenerativeAI(
     max_output_tokens=200,
 )
 
-agent = create_agent(model=chat_model)
+agent = create_agent(model=chat_model, tools=[read_input])
 
 response = agent.invoke({
     "messages": [

@@ -1,5 +1,6 @@
 import ast
 from pathlib import Path
+from langchain.tools import tool
 
 
 def _describe_function(node: ast.FunctionDef) -> dict:
@@ -35,6 +36,7 @@ def read_source_code(source: str) -> list[dict] | dict[str, str]:
     results = [_describe_function(func) for func in functions]
     return results
 
+@tool
 def read_input(text: str | None = None,
                path: str | None = None) -> list[dict] | dict[str, str]:
     """Read a function definition as a raw text input or from a file path.
