@@ -10,10 +10,33 @@ def _describe_function(node: ast.FunctionDef) -> dict:
         "name": node.name,
         "docstring": description,
         "arguments": [arg.arg for arg in parameters]
-    }
+    } 
+
+def read_source_code(source: str) -> list[dict] | dict[str, str]:
+    """
+    Read the source code and extract function definitions along with their docstrings and arguments.
+
+    Args:
+        source (str): The source code to parse.
+
+        Returns:
+            list[dict] | dict[str, str]: A list of function descriptions, or an
+            error dictionary if the source has a syntax error.
+            """
+    try:
+        # Parse the source code into an AST
+        tree = ast.parse(source)
+    except SyntaxError as e:
+        return {"error": f"Source code:{e.lineno}: {e.msg}"}
+
+    # Keep the function nodes
+    functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
+
+    results = [_describe_function(func) for func in functions]
+    return results
 
 def read_input(text: str | None = None,
-               path: str | None = None):
+               path: str | None = None) -> list[dict] | dict[str, str]:
     """Read a function definition as a raw text input or from a file path.
 
     Args:
@@ -24,7 +47,8 @@ def read_input(text: str | None = None,
         ValueError: If neither text nor path is provided.
 
     Returns:
-        _type_: _description_
+        list[dict] | dict[str, str]: A list of function descriptions, or an
+        error dictionary if the source has a syntax error.
     """
     if text is not None:
         source = text
@@ -34,25 +58,3 @@ def read_input(text: str | None = None,
         raise ValueError("Provide code or a file")
     
     return read_source_code(source)
-
-def read_source_code(path: str):
-    """Read a file from the provided path and parse its AST.
-
-    Args:
-        path (str): path to the file
-
-    Returns:
-        dict: _description_
-    """
-    source_code = Path(path).read_text()
-    try:
-        # Parse the source code into an AST
-        tree = ast.parse(source_code)
-    except SyntaxError as e:
-        return {"error": f"{path}:{e.lineno}: {e.msg}"}
-
-    # Keep the function nodes
-    functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
-
-    results = [_describe_function(func) for func in functions]
-    return results
