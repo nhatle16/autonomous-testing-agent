@@ -14,7 +14,18 @@ def _describe_function(node: ast.FunctionDef) -> dict:
 
 def read_input(text: str | None = None,
                path: str | None = None):
-    
+    """Read a function definition as a raw text input or from a file path.
+
+    Args:
+        text (str | None, optional): The raw text of the function definition. Defaults to None.
+        path (str | None, optional): The path to the file containing the function definition. Defaults to None.
+
+    Raises:
+        ValueError: If neither text nor path is provided.
+
+    Returns:
+        _type_: _description_
+    """
     if text is not None:
         source = text
     elif path is not None:
