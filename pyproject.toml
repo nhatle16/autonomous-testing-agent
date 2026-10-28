@@ -1,0 +1,19 @@
+[project]
+name = "autonomous-testing-agent"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "langchain>=1.4",
+    "langchain-google-genai>=4.4",
+    "python-dotenv>=1.2",
+]
+
+[dependency-groups]
+dev = ["pytest>=9", "ruff >=0.17", "coverage"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]      # lets `from src...` imports work with plain `pytest`
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
