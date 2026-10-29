@@ -42,7 +42,7 @@ def read_source_code(source: str) -> list[dict] | dict[str, str]:
 
 @tool
 def read_input(text: str | None = None,
-path: str | None = None) -> list[dict] | dict[str, str]:
+                path: str | None = None) -> list[dict] | dict[str, str]:
     """Read a function definition as a raw text input or from a file path.
 
     Args:
