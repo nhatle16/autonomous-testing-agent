@@ -20,10 +20,10 @@ def read_source_code(source: str) -> list[dict] | dict[str, str]:
     Args:
         source (str): The source code to parse.
 
-        Returns:
-            list[dict] | dict[str, str]: A list of function descriptions, or an
-            error dictionary if the source has a syntax error.
-            """
+    Returns:
+        list[dict] | dict[str, str]: A list of top-level function descriptions, or an
+        error dictionary if the source has a syntax error or contains no top-level functions.
+    """
     try:
         # Parse the source code into an AST
         tree = ast.parse(source)
@@ -33,6 +33,10 @@ def read_source_code(source: str) -> list[dict] | dict[str, str]:
     # Keep the top-level function nodes
     functions = [node for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
 
+    # No function in the source code
+    if not functions:
+        return {"error": "No top-level function found"}
+    
     results = [_describe_function(func) for func in functions]
     return results
 
@@ -45,13 +49,13 @@ path: str | None = None) -> list[dict] | dict[str, str]:
         text (str | None, optional): The raw text of the function definition. Defaults to None.
         path (str | None, optional): The path to the file containing the function definition. Defaults to None.
 
-        Raises:
-            ValueError: If neither text nor path is provided.
+    Raises:
+        ValueError: If neither text nor path is provided.
 
-            Returns:
-                list[dict] | dict[str, str]: A list of function descriptions, or an
-                error dictionary if the source has a syntax error.
-                """
+    Returns:
+        list[dict] | dict[str, str]: A list of top-level function descriptions, or an
+        error dictionary if the source has a syntax error or contains no top-level functions.
+    """
     if text is not None:
         source = text
     elif path is not None:
