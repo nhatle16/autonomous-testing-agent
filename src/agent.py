@@ -7,7 +7,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from src.tools.read_source import read_input
 
-
 SYSTEM_PROMPT="""\
 You are a test-drafting assistant. The user gives you Python code, either pasted as text \
 or as a file path, and you reply with a draft of pytest tests for its functions.
@@ -65,7 +64,7 @@ def build_model():
         temperature=0.15,
         max_output_tokens=int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "2048"))
     )
-    
+
 
 def build_agent(model=None):
     if model is None:
@@ -75,10 +74,11 @@ def build_agent(model=None):
         tools=[read_input],
         system_prompt=SYSTEM_PROMPT
     )
-    
+
+
 if __name__ == "__main__":
     agent = build_agent()
     response = agent.invoke({
         "messages": [HumanMessage(content="Write pytest tests for divide in src/samples/sample2.py")]
-    }) 
+    })
     print(response["messages"][-1].content)
