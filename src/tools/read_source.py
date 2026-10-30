@@ -1,16 +1,55 @@
 import ast
 from pathlib import Path
+
 from langchain.tools import tool
 
 
-def _describe_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> dict:
-    parameters = [arg for arg in node.args.args]
-    description = ast.get_docstring(node)
+def _param(arg: ast.arg, kind: str, default: ast.expr | None) -> dict:
+    """Describe a function parameter."""
+    return {
+        "name": arg.arg,
+        "kind": kind,
+        "annotation": ast.unparse(arg.annotation) if arg.annotation else None,
+        "default": ast.unparse(default) if default else None
+    }
+
+def _describe_parameters(args: ast.arguments) -> list[dict]:
+    """Describe the parameters of a function."""
+    # Collect positional-only and regular positional parameters, along with their defaults
+    positional = args.posonlyargs + args.args
+    # Map positional parameters to their defaults, filling in None for those without defaults
+    defaults = [None] * (len(positional) - len(args.defaults)) + args.defaults
+    n_posonly = len(args.posonlyargs)
+
+    params = []
+    # Adding positional parameters with their kinds and defaults
+    for i, (arg, default) in enumerate(zip(positional, defaults)):
+        kind = "positional_only" if i < n_posonly else "positional"
+        params.append(_param(arg, kind, default))
+
+    # Variable-length positional parameter (*args)
+    if args.vararg:
+        params.append(_param(args.vararg, "var_positional", None))
+    # Keyword-only parameters with their defaults
+    for arg, default in zip(args.kwonlyargs, args.kw_defaults):
+        params.append(_param(arg, "keyword_only", default))
+    # Variable-length keyword parameter (**kwargs)
+    if args.kwarg:
+        params.append(_param(args.kwarg, "var_keyword", None))
+
+    return params
+
+def _describe_function(node: ast.FunctionDef | ast.AsyncFunctionDef, source: str) -> dict:
+    parameters = _describe_parameters(node.args)
+    docstring = ast.get_docstring(node)
 
     return {
         "name": node.name,
-        "docstring": description,
-        "arguments": [arg.arg for arg in parameters]
+        "docstring": docstring,
+        "is_async": isinstance(node, ast.AsyncFunctionDef),
+        "parameters": parameters,
+        "returns": ast.unparse(node.returns) if node.returns else None,
+        "source": ast.get_source_segment(source, node)
     }
 
 def read_source_code(source: str) -> list[dict] | dict[str, str]:
@@ -36,8 +75,8 @@ def read_source_code(source: str) -> list[dict] | dict[str, str]:
     # No function in the source code
     if not functions:
         return {"error": "No top-level function found"}
-    
-    results = [_describe_function(func) for func in functions]
+
+    results = [_describe_function(func, source) for func in functions]
     return results
 
 @tool
