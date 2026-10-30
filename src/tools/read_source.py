@@ -88,18 +88,19 @@ def read_input(text: str | None = None,
         text (str | None, optional): The raw text of the function definition. Defaults to None.
         path (str | None, optional): The path to the file containing the function definition. Defaults to None.
 
-    Raises:
-        ValueError: If neither text nor path is provided.
-
     Returns:
         list[dict] | dict[str, str]: A list of top-level function descriptions, or an
-        error dictionary if the source has a syntax error or contains no top-level functions.
+        error dictionary if neither text nor path is provided, the file cannot be read,
+        the source has a syntax error or contains no top-level functions.
     """
     if text is not None:
         source = text
     elif path is not None:
-        source = Path(path).read_text(encoding="utf-8")
+        try:
+            source = Path(path).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as e:
+            return {"error": f"Cannot read {path}: {e}"}
     else:
-        raise ValueError("Provide code or a file")
+        return {"error": "Provide text or path"}
 
     return read_source_code(source)
