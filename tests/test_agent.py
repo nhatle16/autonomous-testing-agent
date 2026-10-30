@@ -9,6 +9,7 @@ from src.samples.sample2 import divide
 
 def test_divide_returns_quotient():
     assert divide(6, 3) == 2
+```
 """
 
 
