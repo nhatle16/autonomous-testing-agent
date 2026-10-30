@@ -7,7 +7,14 @@ def test_read_input_parses_source_text():
     source = 'def greet(name):\n    """Say hello."""\n    pass\n'
 
     assert read_input.invoke({"text": source}) == [
-        {"name": "greet", "docstring": "Say hello.", "arguments": ["name"]}
+        {
+            "name": "greet",
+            "docstring": "Say hello.",
+            "is_async": False,
+            "parameters": [{"name": "name", "kind": "positional", "annotation": None, "default": None}],
+            "returns": None,
+            "source": 'def greet(name):\n    """Say hello."""\n    pass'
+        }
     ]
 
 
@@ -16,7 +23,14 @@ def test_read_input_reads_source_from_file(tmp_path):
     source_file.write_text("def greet():\n    pass\n", encoding="utf-8")
 
     assert read_input.invoke({"path": str(source_file)}) == [
-        {"name": "greet", "docstring": None, "arguments": []}
+        {
+            "name": "greet",
+            "docstring": None,
+            "is_async": False,
+            "parameters": [],
+            "returns": None,
+            "source": "def greet():\n    pass"
+        }
     ]
 
 
