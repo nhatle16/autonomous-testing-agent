@@ -81,4 +81,4 @@ if __name__ == "__main__":
     response = agent.invoke({
         "messages": [HumanMessage(content="Write pytest tests for divide in src/samples/sample2.py")]
     })
-    print(response["messages"][-1].content)
+    print(response["messages"][-1].text)
