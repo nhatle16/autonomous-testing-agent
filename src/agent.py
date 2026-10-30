@@ -1,3 +1,5 @@
+import os
+
 from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
@@ -5,7 +7,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from src.tools.read_source import read_input
 
-load_dotenv()
 
 SYSTEM_PROMPT="""\
 You are a test-drafting assistant. The user gives you Python code, either pasted as text \
@@ -43,32 +44,41 @@ a placeholder and say so in the assumptions.
 
 ## Reply format
 Reply with exactly:
-    1. One fenced ```python code block holding the complete test file: imports first, then the \
-    tests. Name tests `test_<function>_<behaviour>`.
-    2. A short "Assumptions" list: placeholder imports, and any behaviour the source leaves \
-    unspecified, such as how floats are compared or what an unvalidated input does.
+1. One fenced ```python code block holding the complete test file: imports first, then the \
+tests. Name tests `test_<function>_<behaviour>`.
+2. A short "Assumptions" list: placeholder imports, and any behaviour the source leaves \
+unspecified, such as how floats are compared or what an unvalidated input does.
 
-    ## Rules
-    - You only draft tests. You cannot write files or run code, so never claim that the tests \
-    were run, pass or were saved.
-    - Do not modify or rewrite the user's function. If you spot a likely bug, mention it in the \
-    assumptions and write the test for the documented behaviour.
-    - Keep the reply to the code block and the assumptions, with no extra commentary.
+## Rules
+- You only draft tests. You cannot write files or run code, so never claim that the tests \
+were run, pass or were saved.
+- Do not modify or rewrite the user's function. If you spot a likely bug, mention it in the \
+assumptions and write the test for the documented behaviour.
+- Keep the reply to the code block and the assumptions, with no extra commentary.
 """
 
 
-chat_model = ChatGoogleGenerativeAI(
-    model="gemini-3.1-flash-lite",
-    temperature=0.1,
-    max_output_tokens=200,
-)
+def build_model():
+    load_dotenv()
+    return ChatGoogleGenerativeAI(
+        model=os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite"),
+        temperature=0.15,
+        max_output_tokens=int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "2048"))
+    )
+    
 
-agent = create_agent(model=chat_model, tools=[read_input])
-
-response = agent.invoke({
-    "messages": [
-        HumanMessage(content="Create a warm greeting.")
-    ]
-})
-
-print(response["messages"][-1].content)
+def build_agent(model=None):
+    if model is None:
+        model = build_model()
+    return create_agent(
+        model=model,
+        tools=[read_input],
+        system_prompt=SYSTEM_PROMPT
+    )
+    
+if __name__ == "__main__":
+    agent = build_agent()
+    response = agent.invoke({
+        "messages": [HumanMessage(content="Write pytest tests for divide in src/samples/sample2.py")]
+    }) 
+    print(response["messages"][-1].content)
