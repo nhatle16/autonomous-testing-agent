@@ -84,3 +84,36 @@ def test_read_input_reads_sample_file():
     result = read_input.invoke({"path": "src/samples/sample2.py"})
 
     assert _names(result) == ["add", "substract", "multiply", "divide"]
+    
+
+# Test helper to create short parameter dictionaries
+def _param(name, kind, annotation=None, default=None):
+    return {"name": name, "kind": kind, "annotation": annotation, "default": default}
+
+
+def test_read_input_describes_every_parameter_kind():
+    source = "def f(a, /, b: int = 1, *args, c, d: str = 'x', **kw) -> bool:\n    pass\n"
+
+    [function] = read_input.invoke({"text": source})
+
+    assert function["parameters"] == [
+        _param("a", "positional_only"),
+        _param("b", "positional", "int", "1"),
+        _param("args", "var_positional"),
+        _param("c", "keyword_only"),
+        _param("d", "keyword_only", "str", "'x'"),
+        _param("kw", "var_keyword"),
+    ]
+    assert function["returns"] == "bool"
+
+
+def test_read_input_aligns_defaults_with_last_positional_parameters():
+    source = "def g(a, /, b, c=2):\n    pass\n"
+
+    [function] = read_input.invoke({"text": source})
+
+    assert function["parameters"] == [
+        _param("a", "positional_only"),
+        _param("b", "positional"),
+        _param("c", "positional", default="2"),
+    ]
