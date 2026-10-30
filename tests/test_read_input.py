@@ -35,8 +35,13 @@ def test_read_input_reads_source_from_file(tmp_path):
 
 
 def test_read_input_requires_text_or_path():
-    with pytest.raises(ValueError, match="Provide code or a file"):
-        read_input.invoke({})
+    assert read_input.invoke({}) == {"error": "Provide text or path"}
+
+
+def test_read_input_returns_error_for_unreadable_file(tmp_path):
+    result = read_input.invoke({"path": str(tmp_path / "missing.py")})
+
+    assert result["error"].startswith("Cannot read")
 
 
 def test_read_input_returns_syntax_error_for_invalid_text():
