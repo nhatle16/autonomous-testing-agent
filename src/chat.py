@@ -39,29 +39,32 @@ def main(agent=None, input_fn=input) -> None:
     messages = []
     
     # Read user input in a loop, until /quit is typed
-    while True:
-        text = read_message(input_fn)
-        if text == "/quit":
-            break
-        if text == "/reset":
-            messages = []
-            print("Conversation reset.")
-            continue
-        if not text.strip():
-            continue
-        
-        # Call agent with the accumulated messages and the new user input
-        try:
-            response = agent.invoke(
-                {"messages": messages + [HumanMessage(content=text)]}
-            )
-        except Exception as e:  # noqa: BLE001
-            # Keep the session alive on any API or network error, the failed return is dropped
-            print(f"Error invoking agent: {e}")
-            continue
+    try:
+        while True:
+            text = read_message(input_fn)
+            if text == "/quit":
+                break
+            if text == "/reset":
+                messages = []
+                print("Conversation reset.")
+                continue
+            if not text.strip():
+                continue
             
-        messages = response["messages"]
-        print(messages[-1].text)
+            # Call agent with the accumulated messages and the new user input
+            try:
+                response = agent.invoke(
+                    {"messages": messages + [HumanMessage(content=text)]}
+                )
+            except Exception as e:  # noqa: BLE001
+                # Keep the session alive on any API or network error, the failed return is dropped
+                print(f"Error invoking agent: {e}")
+                continue
+                
+            messages = response["messages"]
+            print(messages[-1].text)
+    except KeyboardInterrupt:
+        print()
         
 
 if __name__ == "__main__":
