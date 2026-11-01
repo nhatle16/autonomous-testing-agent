@@ -35,7 +35,8 @@ def main(agent=None, input_fn=input) -> None:
             print("GEMINI_API_KEY is not set. Copy .env.example to .env and set your API key.")
             return
         agent = build_agent()
-    print("Paste a function or a file path that contains function definition, then type /send. Commands: /reset, /quit.")
+    print("Paste a function or a file path that contains function definition,"
+          "then type /send. Commands: /reset, /quit.")
     messages = []
     
     # Read user input in a loop, until /quit is typed
@@ -57,7 +58,7 @@ def main(agent=None, input_fn=input) -> None:
                     {"messages": messages + [HumanMessage(content=text)]}
                 )
             except Exception as e:  # noqa: BLE001
-                # Keep the session alive on any API or network error, the failed return is dropped
+                # Keep the session alive on any API or network error, the failed turn is dropped
                 print(f"Error invoking agent: {e}")
                 continue
                 
