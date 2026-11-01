@@ -122,3 +122,11 @@ def test_read_input_aligns_defaults_with_last_positional_parameters():
         _param("b", "positional"),
         _param("c", "positional", default="2"),
     ]
+
+
+def test_read_input_does_not_execute_source_code(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    source = 'open("marker", "w")\nraise SystemExit\n\ndef f():\n    pass\n'
+    
+    assert [fn["name"] for fn in read_input.invoke({"text": source})] == ["f"]
+    assert not (tmp_path / "marker").exists()
