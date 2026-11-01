@@ -1,0 +1,68 @@
+{
+  "pyproject.toml": {
+    "mtime": 1793336277.312705,
+    "seen": 1793548467.7902122,
+    "ast_hash": "5c3a41055b3952d2c6177920b9bd1610",
+    "semantic_hash": "5c3a41055b3952d2c6177920b9bd1610"
+  },
+  "src/__init__.py": {
+    "mtime": 1793336277.3138034,
+    "seen": 1793548467.790217,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "src/agent.py": {
+    "mtime": 1793491788.1340578,
+    "seen": 1793548467.790219,
+    "ast_hash": "75cd6704cec8bc528b43dd17f540f898",
+    "semantic_hash": "75cd6704cec8bc528b43dd17f540f898"
+  },
+  "src/chat.py": {
+    "mtime": 1793511659.7637837,
+    "seen": 1793548467.790221,
+    "ast_hash": "298c8c149fb4ba3fe81060016af91c96",
+    "semantic_hash": "298c8c149fb4ba3fe81060016af91c96"
+  },
+  "src/samples/sample1.py": {
+    "mtime": 1793336277.3325167,
+    "seen": 1793548467.7902222,
+    "ast_hash": "4a83a1ab3980b94066e93f6309d8c9c1",
+    "semantic_hash": "4a83a1ab3980b94066e93f6309d8c9c1"
+  },
+  "src/samples/sample2.py": {
+    "mtime": 1793336277.3330047,
+    "seen": 1793548467.7902231,
+    "ast_hash": "58925e30d767519760e3eba5db965b79",
+    "semantic_hash": "58925e30d767519760e3eba5db965b79"
+  },
+  "src/tools/__init__.py": {
+    "mtime": 1793336277.3334944,
+    "seen": 1793548467.7902248,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "src/tools/read_source.py": {
+    "mtime": 1793336277.3340135,
+    "seen": 1793548467.790226,
+    "ast_hash": "52d1f1c444a1b5720399d4b6d1021582",
+    "semantic_hash": "52d1f1c444a1b5720399d4b6d1021582"
+  },
+  "tests/test_agent.py": {
+    "mtime": 1793493171.4807801,
+    "seen": 1793548467.790227,
+    "ast_hash": "8c0c8bdd4e66e809168ea813a4666c49",
+    "semantic_hash": "8c0c8bdd4e66e809168ea813a4666c49"
+  },
+  "tests/test_chat.py": {
+    "mtime": 1793511659.7642746,
+    "seen": 1793548467.790229,
+    "ast_hash": "3b94b41f96bc663ff6db6d05c21207d3",
+    "semantic_hash": "3b94b41f96bc663ff6db6d05c21207d3"
+  },
+  "tests/test_read_input.py": {
+    "mtime": 1793493171.4817884,
+    "seen": 1793548467.79023,
+    "ast_hash": "17f54d473ecafbe9bad6dfbc3efdc1ef",
+    "semantic_hash": "17f54d473ecafbe9bad6dfbc3efdc1ef"
+  }
+}
