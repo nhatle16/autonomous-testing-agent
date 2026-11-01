@@ -1,6 +1,9 @@
+import sys
+import time
+
 from langchain_core.messages import AIMessage
 
-from src.chat import main, read_message
+from src.chat import loading, main, read_message
 
 
 # Simulate keyboard input
@@ -112,3 +115,24 @@ def test_main_quits_on_eof():
     main(agent=agent, input_fn=_inputs("hello"))
 
     assert _message_counts(agent) == [1]
+
+
+# In a terminal, the loading line animates while the block runs and is cleared afterwards
+def test_loading_animates_and_clears_in_terminal(capsys, monkeypatch):
+    monkeypatch.setattr(sys.stdout, "isatty", lambda: True)
+
+    with loading("Reasoning"):
+        time.sleep(0.6)
+
+    out = capsys.readouterr().out
+    assert "\rReasoning.\033[K" in out
+    assert "\rReasoning..\033[K" in out
+    assert out.endswith("\r\033[K")
+
+
+# Outside a terminal (pipes, captured output), nothing is printed
+def test_loading_prints_nothing_outside_terminal(capsys):
+    with loading():
+        pass
+
+    assert capsys.readouterr().out == ""
