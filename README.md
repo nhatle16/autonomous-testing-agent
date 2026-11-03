@@ -33,6 +33,19 @@ Then edit `.env`:
 | `GEMINI_API_KEY` | yes | — |
 | `GEMINI_MODEL` | no | `gemini-3.1-flash-lite` |
 | `GEMINI_MAX_OUTPUT_TOKENS` | no | `2048` |
+| `LANGSMITH_TRACING` | no | `false` |
+| `LANGSMITH_API_KEY` | only for tracing | — |
+| `LANGSMITH_PROJECT` | no | `default` |
+
+### Tracing (optional)
+
+To see every step the agent takes, set `LANGSMITH_TRACING=true` and add a
+[LangSmith](https://smith.langchain.com) API key. Each chat turn then appears in the LangSmith
+project as a trace: the model call, the `read_input` tool call and the final reply, with inputs,
+outputs, token counts and timings. No code change is needed.
+
+Traces include the code you send, and they are stored on LangSmith's servers. Leave tracing off
+for code you can't share.
 
 ## Usage
 
