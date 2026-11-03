@@ -62,7 +62,9 @@ def build_model():
     return ChatGoogleGenerativeAI(
         model=os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite"),
         temperature=0.15,
-        max_output_tokens=int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "2048"))
+        max_output_tokens=int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "2048")),
+        max_retries=3,
+        request_timeout=40
     )
 
 
