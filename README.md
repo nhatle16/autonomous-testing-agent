@@ -22,7 +22,7 @@ Requires Python 3.11 or newer and a [Gemini API key](https://aistudio.google.com
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install langchain langchain-google-genai python-dotenv pytest ruff
+pip install -r requirements.txt
 cp .env.example .env
 ```
 
