@@ -2,6 +2,7 @@ import itertools
 import os
 import sys
 import threading
+import uuid
 from contextlib import contextmanager
 
 from dotenv import load_dotenv
@@ -71,7 +72,9 @@ def main(agent=None, input_fn=input) -> None:
     print("Paste a function or a file path that contains function definition,"
           "then type /send. Commands: /reset, /quit.")
     messages = []
-    
+    # Groups this conversation's turns into one LangSmith thread
+    thread_id = str(uuid.uuid4())
+
     # Read user input in a loop, until /quit is typed
     try:
         while True:
@@ -80,6 +83,7 @@ def main(agent=None, input_fn=input) -> None:
                 break
             if text == "/reset":
                 messages = []
+                thread_id = str(uuid.uuid4())  # a reset starts a new conversation
                 print("Conversation reset.")
                 continue
             if not text.strip():
@@ -89,7 +93,8 @@ def main(agent=None, input_fn=input) -> None:
             try:
                 with loading():
                     response = agent.invoke(
-                        {"messages": messages + [HumanMessage(content=text)]}
+                        {"messages": messages + [HumanMessage(content=text)]},
+                        config={"metadata": {"thread_id": thread_id}},
                     )
             except Exception as e:  # noqa: BLE001
                 # Keep the session alive on any API or network error, the failed turn is dropped

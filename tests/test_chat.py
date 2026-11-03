@@ -24,10 +24,12 @@ def _inputs(*lines):
 class FakeAgent:
     def __init__(self, fail_first=False):
         self.calls = []
+        self.configs = []
         self.fail_first = fail_first
 
-    def invoke(self, state):
+    def invoke(self, state, config=None):
         self.calls.append(state)
+        self.configs.append(config)
         # Simulate an API failure on the first call
         if self.fail_first and len(self.calls) == 1:
             raise RuntimeError("API down")
@@ -85,6 +87,17 @@ def test_main_reset_clears_history(capsys):
 
     assert _message_counts(agent) == [1, 1]
     assert "Conversation reset." in capsys.readouterr().out
+
+
+# Turns share one LangSmith thread id, and /reset starts a new one
+def test_main_groups_turns_into_one_thread_until_reset():
+    agent = FakeAgent()
+
+    main(agent=agent, input_fn=_inputs("a", "/send", "b", "/send", "/reset", "c", "/send"))
+
+    first, second, after_reset = (c["metadata"]["thread_id"] for c in agent.configs)
+    assert first == second
+    assert after_reset != first
 
 
 # An empty or blank message is not sent to the agent
