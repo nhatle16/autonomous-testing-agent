@@ -61,7 +61,7 @@ assumptions and write the test for the documented behaviour.
 def build_model(model=None):
     load_dotenv()
     return ChatGoogleGenerativeAI(
-        model=model or os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite"),
+        model=model or os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"),
         temperature=0.15,
         max_output_tokens=int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "2048")),
         max_retries=1,
@@ -75,7 +75,7 @@ def build_agent(model=None):
     if model is None:
         model = build_model()
         # Fallback to other Gemini model if the main one fails
-        fallback_model = build_model(model=os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite"))
+        fallback_model = build_model(model=os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.1-flash-lite"))
         middleware.append(ModelFallbackMiddleware(fallback_model))
     return create_agent(
         model=model,
