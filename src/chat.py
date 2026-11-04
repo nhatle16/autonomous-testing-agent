@@ -69,7 +69,7 @@ def main(agent=None, input_fn=input) -> None:
             print("GEMINI_API_KEY is not set. Copy .env.example to .env and set your API key.")
             return
         agent = build_agent()
-    print("Paste a function or a file path that contains function definition,"
+    print("Paste a function or a file path that contains function definition, "
           "then type /send. Commands: /reset, /quit.")
     messages = []
     # Groups this conversation's turns into one LangSmith thread
