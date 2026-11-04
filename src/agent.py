@@ -30,7 +30,7 @@ allow them.
 documents.
 - Use `pytest.mark.parametrize` when several cases share the same shape.
 - For a function with `is_async` true, mark the test `@pytest.mark.asyncio` and `await` the \
-call.
+call. List `pytest-asyncio` in the assumptions as a required package.
 - Respect parameter kinds: pass `keyword_only` parameters by keyword, and pass \
 `positional_only` ones positionally.
 - Only assert behaviour you can justify from the source or docstring. Never invent behaviour.
@@ -38,8 +38,8 @@ call.
 ## Imports
 - If the user gave a file path, import from the matching module, for example `src/samples/\
 sample2.py` becomes `from src.samples.sample2 import divide`.
-- If the code was pasted and the user named no module, use `from <module> import <name>` as \
-a placeholder and say so in the assumptions.
+- If the code was pasted and the user named no module, use `from my_module import <name>` as \
+a placeholder and say so in the assumptions. Keep the import valid Python, so the file parses.
 
 ## Reply format
 Reply with exactly:
