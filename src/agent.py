@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from langchain.agents import create_agent
+from langchain.agents.middleware import ModelCallLimitMiddleware, ModelFallbackMiddleware
 from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -57,10 +58,10 @@ assumptions and write the test for the documented behaviour.
 """
 
 
-def build_model():
+def build_model(model=None):
     load_dotenv()
     return ChatGoogleGenerativeAI(
-        model=os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite"),
+        model=model or os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite"),
         temperature=0.15,
         max_output_tokens=int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "2048")),
         max_retries=3,
@@ -69,12 +70,18 @@ def build_model():
 
 
 def build_agent(model=None):
+    # Caps model per turn, so looping agent always stop
+    middleware = [ModelCallLimitMiddleware(run_limit=4)]
     if model is None:
         model = build_model()
+        # Fallback to other Gemini model if the main one fails
+        fallback_model = build_model(model=os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite"))
+        middleware.append(ModelFallbackMiddleware(fallback_model))
     return create_agent(
         model=model,
         tools=[read_input],
-        system_prompt=SYSTEM_PROMPT
+        system_prompt=SYSTEM_PROMPT,
+        middleware=middleware
     )
 
 
