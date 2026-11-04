@@ -18,7 +18,8 @@ def test_read_input_parses_source_text():
     ]
 
 
-def test_read_input_reads_source_from_file(tmp_path):
+def test_read_input_reads_source_from_file(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     source_file = tmp_path / "example.py"
     source_file.write_text("def greet():\n    pass\n", encoding="utf-8")
 
@@ -38,10 +39,34 @@ def test_read_input_requires_text_or_path():
     assert read_input.invoke({}) == {"error": "Provide text or path"}
 
 
-def test_read_input_returns_error_for_unreadable_file(tmp_path):
+def test_read_input_returns_error_for_unreadable_file(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     result = read_input.invoke({"path": str(tmp_path / "missing.py")})
 
     assert result["error"].startswith("Cannot read")
+    assert "No such file" in result["error"]
+
+
+# The model picks the path, so non-.py files like .env are refused without being read
+def test_read_input_refuses_non_py_file(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".env").write_text("GEMINI_API_KEY=secret\n", encoding="utf-8")
+
+    result = read_input.invoke({"path": ".env"})
+
+    assert result == {"error": "Cannot read .env: only .py files inside the current folder"}
+
+
+# .py files outside the current folder are refused, including through ../
+def test_read_input_refuses_file_outside_current_folder(tmp_path, monkeypatch):
+    (tmp_path / "outside.py").write_text("def f():\n    pass\n", encoding="utf-8")
+    inside = tmp_path / "project"
+    inside.mkdir()
+    monkeypatch.chdir(inside)
+
+    for path in ["../outside.py", str(tmp_path / "outside.py")]:
+        result = read_input.invoke({"path": path})
+        assert "only .py files inside the current folder" in result["error"]
 
 
 def test_read_input_returns_syntax_error_for_invalid_text():

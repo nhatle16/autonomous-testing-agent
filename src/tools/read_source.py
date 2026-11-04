@@ -96,6 +96,10 @@ def read_input(text: str | None = None,
     if text is not None:
         source = text
     elif path is not None:
+        # The model picks the path, so only allow .py files inside the current folder (not .env)
+        file = Path(path).resolve()
+        if file.suffix != ".py" or not file.is_relative_to(Path.cwd().resolve()):
+            return {"error": f"Cannot read {path}: only .py files inside the current folder"}
         try:
             source = Path(path).read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError) as e:
