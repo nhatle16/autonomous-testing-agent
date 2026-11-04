@@ -53,3 +53,20 @@ def test_agent_calls_read_input_then_replies_with_tests():
 
 def test_system_prompt_requires_read_input_first():
     assert "call the `read_input` tool first" in SYSTEM_PROMPT
+
+
+# The agent stops after 4 model calls, even if the model keeps asking for tools
+def test_agent_stops_at_model_call_limit():
+    tool_calls = [
+        AIMessage(content="", tool_calls=[
+            {"name": "read_input", "args": {"path": "src/samples/sample2.py"}, "id": f"call_{i}"}
+        ])
+        for i in range(10)
+    ]
+    agent = build_agent(model=FakeToolModel(messages=iter(tool_calls)))
+
+    result = agent.invoke({"messages": [HumanMessage(content="Write tests")]})
+
+    tool_messages = [m for m in result["messages"] if isinstance(m, ToolMessage)]
+    assert len(tool_messages) == 4
+    assert result["messages"][-1].text.startswith("Model call limits exceeded")
