@@ -31,7 +31,8 @@ Then edit `.env`:
 | Variable | Required | Default |
 |---|---|---|
 | `GEMINI_API_KEY` | yes | — |
-| `GEMINI_MODEL` | no | `gemini-3.1-flash-lite` |
+| `GEMINI_MODEL` | no | `gemini-3.5-flash-lite` |
+| `GEMINI_FALLBACK_MODEL` | no, used when a `GEMINI_MODEL` call fails | `gemini-3.1-flash-lite` |
 | `GEMINI_MAX_OUTPUT_TOKENS` | no | `2048` |
 | `LANGSMITH_TRACING` | no | `false` |
 | `LANGSMITH_API_KEY` | only for tracing | — |
