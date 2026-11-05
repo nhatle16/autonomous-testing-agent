@@ -27,13 +27,16 @@ class FakeAgent:
         self.configs = []
         self.fail_first = fail_first
 
-    def invoke(self, state, config=None):
+    # Yield events like agent.stream(stream_mode=["messages", "values"])
+    def stream(self, state, config=None, stream_mode=None):
         self.calls.append(state)
         self.configs.append(config)
         # Simulate an API failure on the first call
         if self.fail_first and len(self.calls) == 1:
             raise RuntimeError("API down")
-        return {"messages": state["messages"] + [AIMessage(content="reply")]}
+        reply = AIMessage(content="reply")
+        yield ("messages", (reply, {}))
+        yield ("values", {"messages": state["messages"] + [reply]})
 
 
 # Number of messages the agent received on each call
