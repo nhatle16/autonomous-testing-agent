@@ -6,7 +6,7 @@ import uuid
 from contextlib import contextmanager
 
 from dotenv import load_dotenv
-from langchain.messages import HumanMessage
+from langchain.messages import AIMessage, HumanMessage
 
 from src.agent import build_agent
 
@@ -37,7 +37,7 @@ def loading(text="Reasoning"):
     """Animate "<text>." / ".." / "..." on one line until the block finishes, then clear it."""
     # Only animate if stdout is an interactive terminal
     if not sys.stdout.isatty():
-        yield
+        yield lambda: None
         return
 
     stop = threading.Event()
@@ -49,16 +49,39 @@ def loading(text="Reasoning"):
             if stop.wait(0.5):
                 break
 
+    def stop_animation():
+        if not stop.is_set():
+            stop.set()
+            thread.join()
+            print("\r\033[K", end="", flush=True)
+
     # Define a daemon thread to run the animation in the background
     thread = threading.Thread(target=animate, daemon=True)
     thread.start()      # Start the animation thread
     try:
-        yield
+        yield stop_animation
     finally:
-        # Runs on success, error and Ctrl-C, so the loading line never stays behind
-        stop.set()
-        thread.join()
-        print("\r\033[K", end="", flush=True)
+        stop_animation()
+
+
+def stream_reply(agent, messages, config):
+    # state holds the latest full agent state, printed is True if any streamed text reached the screen
+    state, printed = None, False
+    with loading() as stop_animation:
+        for mode, data in agent.stream({"messages": messages}, config=config,
+                                       stream_mode=["messages", "values"]):
+            if mode == "messages":
+                chunk, _metadata = data
+                if isinstance(chunk, AIMessage) and chunk.text:
+                    stop_animation()
+                    print(chunk.text, end="", flush=True)
+                    printed = True
+            else:
+                state = data
+    if not printed:
+        print(state["messages"][-1].text, end="")
+    print()
+    return state["messages"]
 
 
 def main(agent=None, input_fn=input) -> None:
