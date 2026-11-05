@@ -78,9 +78,11 @@ def stream_reply(agent, messages, config):
                     printed = True
             else:
                 state = data
+    # Print the last message in the state if no text was streamed
     if not printed:
         print(state["messages"][-1].text, end="")
     print()
+    # Return the full conversation history, including this turn
     return state["messages"]
 
 
@@ -114,18 +116,13 @@ def main(agent=None, input_fn=input) -> None:
             
             # Call agent with the accumulated messages and the new user input
             try:
-                with loading():
-                    response = agent.invoke(
-                        {"messages": messages + [HumanMessage(content=text)]},
-                        config={"metadata": {"thread_id": thread_id}},
-                    )
+                messages = stream_reply(agent, messages + [HumanMessage(content=text)],
+                                        {"metadata": {"thread_id": thread_id}})
             except Exception as e:  # noqa: BLE001
                 # Keep the session alive on any API or network error, the failed turn is dropped
                 print(f"Error invoking agent: {e}")
                 continue
-                
-            messages = response["messages"]
-            print(messages[-1].text)
+
     except KeyboardInterrupt:
         print()
         
