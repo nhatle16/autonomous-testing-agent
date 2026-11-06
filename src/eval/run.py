@@ -1,9 +1,19 @@
+import json
+import os
 import time
 from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
 
+from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, HumanMessage
 
+from src.agent import build_agent, build_model
+from src.eval.cases import CASES
 from src.eval.scores import called_tool_first, format_ok, parses
+
+RUNS = 3
+SCORES = ["called_tool_first", "parses", "format_ok"]
 
 
 def _score(case, messages, seconds):
@@ -34,9 +44,6 @@ def _invoke(agent, message):
             time.sleep(5 * (attempt + 1))       # set wait time before retry
 
 
-SCORES = ["called_tool_first", "parses", "format_ok"]
-
-
 def _mean(rows, key):
     """Average of key over the rows that have it; None when no row does."""
     vals = [r[key] for r in rows if r.get(key) is not None]
@@ -63,3 +70,46 @@ def _summary(rows):
                 + "".join(f"{_fmt(_mean(group, s), '.0%'):>19}" for s in SCORES)
                 + f"{_fmt(_mean(group, 'seconds'), '.1f'):>7}"
                 + f"{_fmt(_mean(group, 'tokens'), '.0f'):>8}")
+
+
+def main(agent=None):
+    """Run every case RUNS times, save each row as a JSON line, then print the summary."""
+    if agent is None:
+        load_dotenv()
+        if not os.getenv("GEMINI_API_KEY"):
+            print("GEMINI_API_KEY is not set. Copy .env.example to .env and set your API key.")
+            return
+
+        # Use only one known model for every run
+        agent = build_agent(model=build_model())
+
+    # Define the output file path
+    out = Path("evals/results") / f"{datetime.now():%Y-%m-%d_%H%M}.jsonl"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    rows = []
+    with out.open("w") as f:
+        for case in CASES:
+            for run in range(RUNS):
+                print(f"{case['id']} {run + 1}/{RUNS}")
+                start = time.perf_counter()
+                try:
+                    messages = _invoke(agent, case["message"])
+                    row = _score(case, messages, time.perf_counter() - start)
+                except Exception as e:  # noqa: BLE001
+                    # An outage after all retries is recorded, not counted as an agent failure
+                    row = {"case": case["id"], "type": case["type"], "error": str(e)}
+
+                # Which of the RUNS attempts this row is
+                row["run"] = run
+
+                # Write each row right away, so a crash keeps the finished runs
+                f.write(json.dumps(row) + "\n")
+                f.flush()
+                rows.append(row)
+
+    _summary(rows)
+    print(f"Results: {out}")
+
+
+if __name__ == "__main__":
+    main()
