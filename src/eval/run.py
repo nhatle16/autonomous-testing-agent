@@ -1,4 +1,7 @@
-from langchain_core.messages import AIMessage
+import time
+from collections import defaultdict
+
+from langchain_core.messages import AIMessage, HumanMessage
 
 from src.eval.scores import called_tool_first, format_ok, parses
 
@@ -18,3 +21,14 @@ def _score(case, messages, seconds):
         "tokens": sum(m.usage_metadata["total_tokens"] for m in ai if m.usage_metadata),
         "reply": messages[-1].text
     }
+
+
+def _invoke(agent, message):
+    """Proceed one run with maximum 3 retries"""
+    for attempt in range(3):
+        try:
+            return agent.invoke({"messages": [HumanMessage(content=message)]})["messages"]
+        except Exception:   # noqa: BLE001
+            if attempt == 2:
+                raise
+            time.sleep(5 * (attempt + 1))       # set wait time before retry
