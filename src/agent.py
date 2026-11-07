@@ -1,4 +1,5 @@
 import os
+import warnings
 
 from dotenv import load_dotenv
 from langchain.agents import create_agent
@@ -60,6 +61,8 @@ assumptions and write the test for the documented behaviour.
 
 def build_model(model=None):
     load_dotenv()
+    # 3.5-flash-lite ignores temperature and warns on every call; the 3.1 fallback still uses it
+    warnings.filterwarnings("ignore", message=".*uses fixed sampling defaults")
     return ChatGoogleGenerativeAI(
         model=model or os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"),
         temperature=0.15,
