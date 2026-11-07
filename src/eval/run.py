@@ -13,6 +13,7 @@ from src.eval.cases import CASES
 from src.eval.scores import called_tool_first, format_ok, parses
 
 RUNS = 3
+MAX_ATTEMPTS = 3  # tries per run in _invoke, so an outage doesn't count as a failure
 SCORES = ["called_tool_first", "parses", "format_ok"]
 
 
@@ -34,12 +35,13 @@ def _score(case, messages, seconds):
 
 
 def _invoke(agent, message):
-    """Proceed one run with maximum 3 retries"""
-    for attempt in range(3):
+    """Run one case, trying up to MAX_ATTEMPTS times. Returns (messages, attempts used)."""
+    for attempt in range(MAX_ATTEMPTS):
         try:
-            return agent.invoke({"messages": [HumanMessage(content=message)]})["messages"]
+            result = agent.invoke({"messages": [HumanMessage(content=message)]})
+            return result["messages"], attempt + 1
         except Exception:
-            if attempt == 2:
+            if attempt == MAX_ATTEMPTS - 1:
                 raise
             time.sleep(5 * (attempt + 1))       # set wait time before retry
 
@@ -93,13 +95,16 @@ def main(agent=None):
                 print(f"{case['id']} {run + 1}/{RUNS}")
                 start = time.perf_counter()
                 try:
-                    messages = _invoke(agent, case["message"])
+                    messages, attempts = _invoke(agent, case["message"])
                     row = _score(case, messages, time.perf_counter() - start)
+                    # attempts > 1 means part of "seconds" was spent on failed tries
+                    row["attempts"] = attempts
                 except Exception as e:  # noqa: BLE001
                     # An outage after all retries is recorded, not counted as an agent failure
-                    row = {"case": case["id"], "type": case["type"], "error": str(e)}
+                    row = {"case": case["id"], "type": case["type"], "error": str(e),
+                           "attempts": MAX_ATTEMPTS}
 
-                # Which of the RUNS attempts this row is
+                # Which of the RUNS repeats this row is
                 row["run"] = run
 
                 # Write each row right away, so a crash keeps the finished runs
