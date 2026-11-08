@@ -51,3 +51,9 @@ def called_tool_first(messages):
         if isinstance(m, AIMessage):
             return bool(m.tool_calls) and m.tool_calls[0]["name"] == "read_input"
     return False
+
+
+def hit_call_limit(messages):
+    """True if ModelCallLimitMiddleware stopped the run before the agent replied."""
+    # The middleware ends the run with this message without calling the model
+    return _reply(messages).startswith("Model call limits exceeded")

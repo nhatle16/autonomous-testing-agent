@@ -10,7 +10,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 
 from src.agent import build_agent, build_model
 from src.eval.cases import CASES
-from src.eval.scores import called_tool_first, format_ok, parses
+from src.eval.scores import called_tool_first, format_ok, hit_call_limit, parses
 
 RUNS = 3
 MAX_ATTEMPTS = 3  # tries per run in _invoke, so an outage doesn't count as a failure
@@ -20,6 +20,7 @@ SCORES = ["called_tool_first", "parses", "format_ok"]
 def _score(case, messages, seconds):
     ai = [m for m in messages if isinstance(m, AIMessage)]
     scored = not case["expect_error"]
+    limit = hit_call_limit(messages)
     return {
         "case": case["id"],
         "type": case["type"],
@@ -27,8 +28,9 @@ def _score(case, messages, seconds):
         "called_tool_first": called_tool_first(messages),
         "parses": parses(messages) if scored else None,
         "format_ok": format_ok(messages) if scored else None,
+        "hit_call_limit": limit,
         "seconds": round(seconds, 2),
-        "model_calls": len(ai),
+        "model_calls": len(ai) - limit,  # the limit message isn't a model call
         "tokens": sum(m.usage_metadata["total_tokens"] for m in ai if m.usage_metadata),
         "reply": messages[-1].text
     }
