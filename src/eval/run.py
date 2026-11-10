@@ -10,11 +10,17 @@ from langchain_core.messages import AIMessage, HumanMessage
 
 from src.agent import build_agent, build_model
 from src.eval.cases import CASES
-from src.eval.scores import called_tool_first, format_ok, hit_call_limit, parses
+from src.eval.scores import (
+    called_tool_first,
+    format_ok,
+    hit_call_limit,
+    parses,
+    tool_error_handled,
+)
 
 RUNS = 3
 MAX_ATTEMPTS = 3  # tries per run in _invoke, so an outage doesn't count as a failure
-SCORES = ["called_tool_first", "parses", "format_ok"]
+SCORES = ["called_tool_first", "parses", "format_ok", "tool_error_handled"]
 
 
 def _score(case, messages, seconds):
@@ -28,6 +34,8 @@ def _score(case, messages, seconds):
         "called_tool_first": called_tool_first(messages),
         "parses": parses(messages) if scored else None,
         "format_ok": format_ok(messages) if scored else None,
+        # The mirror of parses and format_ok: scored only on error cases
+        "tool_error_handled": tool_error_handled(messages) if not scored else None,
         "hit_call_limit": limit,
         "seconds": round(seconds, 2),
         "model_calls": len(ai) - limit,  # the limit message isn't a model call

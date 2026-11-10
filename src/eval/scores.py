@@ -57,3 +57,10 @@ def hit_call_limit(messages):
     """True if ModelCallLimitMiddleware stopped the run before the agent replied."""
     # The middleware ends the run with this message without calling the model
     return _reply(messages).startswith("Model call limits exceeded")
+
+
+def tool_error_handled(messages):
+    """True if the reply explains the error and drafts no tests, as the prompt requires."""
+    text = _reply(messages)
+    # A fixed version of the code is a fair suggestion; only drafted tests count as a failure
+    return bool(text.strip()) and "def test_" not in text and not hit_call_limit(messages)
