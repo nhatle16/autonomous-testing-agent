@@ -64,3 +64,10 @@ def tool_error_handled(messages):
     text = _reply(messages)
     # A fixed version of the code is a fair suggestion; only drafted tests count as a failure
     return bool(text.strip()) and "def test_" not in text and not hit_call_limit(messages)
+
+
+def functions_covered(messages, functions):
+    """True if the reply has a test_<name> test for every function in functions."""
+    text = _reply(messages)
+    # shortcut: matches by test name only, so test_div_zero misses divide; use ast if this misleads
+    return all(re.search(rf"def test_{re.escape(name)}(_|\()", text) for name in functions)

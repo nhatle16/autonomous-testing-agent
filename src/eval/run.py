@@ -13,6 +13,7 @@ from src.eval.cases import CASES
 from src.eval.scores import (
     called_tool_first,
     format_ok,
+    functions_covered,
     hit_call_limit,
     parses,
     tool_error_handled,
@@ -20,7 +21,9 @@ from src.eval.scores import (
 
 RUNS = 3
 MAX_ATTEMPTS = 3  # tries per run in _invoke, so an outage doesn't count as a failure
-SCORES = ["called_tool_first", "parses", "format_ok", "tool_error_handled"]
+SCORES = [
+    "called_tool_first", "parses", "format_ok", "functions_covered", "tool_error_handled"
+]
 
 
 def _score(case, messages, seconds):
@@ -34,6 +37,7 @@ def _score(case, messages, seconds):
         "called_tool_first": called_tool_first(messages),
         "parses": parses(messages) if scored else None,
         "format_ok": format_ok(messages) if scored else None,
+        "functions_covered": functions_covered(messages, case["functions"]) if scored else None,
         # The mirror of parses and format_ok: scored only on error cases
         "tool_error_handled": tool_error_handled(messages) if not scored else None,
         "hit_call_limit": limit,
