@@ -20,7 +20,8 @@ from src.eval.scores import (
 )
 
 RUNS = 3
-MAX_ATTEMPTS = 3  # tries per run in _invoke, so an outage doesn't count as a failure
+MAX_ATTEMPTS = 3    # tries per run in _invoke, so an outage doesn't count as a failure
+PAUSE_SECS = 20
 SCORES = [
     "called_tool_first", "parses", "format_ok", "functions_covered", "tool_error_handled"
 ]
@@ -57,7 +58,7 @@ def _invoke(agent, message):
         except Exception:
             if attempt == MAX_ATTEMPTS - 1:
                 raise
-            time.sleep(5 * (attempt + 1))       # set wait time before retry
+            time.sleep(30 * (attempt + 1))       # set wait time before retry
 
 
 def _mean(rows, key):
@@ -88,7 +89,7 @@ def _summary(rows):
                 + f"{_fmt(_mean(group, 'tokens'), '.0f'):>8}")
 
 
-def main(agent=None):
+def main(agent=None, pause=PAUSE_SECS):
     """Run every case RUNS times, save each row as a JSON line, then print the summary."""
     if agent is None:
         load_dotenv()
@@ -106,6 +107,8 @@ def main(agent=None):
     with out.open("w") as f:
         for case in CASES:
             for run in range(RUNS):
+                if rows:
+                    time.sleep(pause)
                 print(f"{case['id']} {run + 1}/{RUNS}")
                 start = time.perf_counter()
                 try:
