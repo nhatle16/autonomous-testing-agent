@@ -1,5 +1,10 @@
 import ast
+import os
 import re
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
 
 from langchain_core.messages import AIMessage, HumanMessage
 
@@ -71,3 +76,33 @@ def functions_covered(messages, functions):
     text = _reply(messages)
     # shortcut: matches by test name only, so test_div_zero misses divide; use ast if this misleads
     return all(re.search(rf"def test_{re.escape(name)}(_|\()", text) for name in functions)
+
+
+def tests_pass(messages, message):
+    """True if the reply's python block passes pytest against the case's code. Runs in a temp folder."""
+    # Get the Python code block
+    blocks = _extract_python_blocks(_reply(messages))
+    if not blocks:
+        return False
+    
+    # Create a temprorary directory to run pytest
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        (tmp / "test_draft.py").write_text(blocks[0])       # get the draft's tests
+        
+        if "\n\n" in message:
+            # Split at the first blank line to get the function in the prompt
+            (tmp / "my_module.py").write_text(message.split("\n\n", 1)[1])
+        
+        # The draft is model-written code, so it must not see the API key
+        env = {k: v for k, v in os.environ.items() if k != "GEMINI_API_KEY"}
+        env["PYTHONPATH"] = os.getcwd()  # so file cases can import src.samples.sample2
+
+        try:
+            result = subprocess.run(
+                [sys.executable, "-m", "pytest", "-q"],
+                check=False, cwd=tmp, env=env, capture_output=True, timeout=30,
+            )
+        except subprocess.TimeoutExpired:
+            return False
+        return result.returncode == 0
