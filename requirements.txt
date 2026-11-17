@@ -7,3 +7,4 @@ python-dotenv>=1.2
 pytest>=9
 ruff>=0.17
 coverage
+pytest-asyncio>=1.5.0

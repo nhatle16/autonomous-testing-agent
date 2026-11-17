@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=9", "ruff >=0.17", "coverage"]
+dev = ["pytest>=9", "ruff >=0.17", "coverage", "pytest-asyncio>=1.5.0"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]      # lets `from src...` imports work with plain `pytest`
