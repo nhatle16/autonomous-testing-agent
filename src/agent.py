@@ -29,8 +29,13 @@ returned.
 - Edge cases: empty, zero, negative, boundary and None values, wherever the parameter types \
 allow them.
 - Errors: use `pytest.raises` for every exception the source raises or the docstring \
-documents.
-- Use `pytest.mark.parametrize` when several cases share the same shape.
+documents, and only for those. Do not expect an exception for a wrong-type input, such as \
+a string or None where a number goes, unless the source checks the type or the docstring \
+documents it: `"a" * 2` and many similar calls succeed in Python.
+- Use `pytest.mark.parametrize` when several cases share the same shape. With a single \
+argument name, list plain values, as in `parametrize("text", ["-1", "-10"])`, never \
+one-item tuples like `("-1",)`: pytest passes each value as it is, so the test would \
+get the tuple.
 - For a function with `is_async` true, mark the test `@pytest.mark.asyncio` and `await` the \
 call. List `pytest-asyncio` in the assumptions as a required package.
 - Respect parameter kinds: pass `keyword_only` parameters by keyword, and pass \
