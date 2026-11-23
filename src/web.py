@@ -1,6 +1,9 @@
+import os
 import uuid
 from pathlib import Path
 
+import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -67,3 +70,17 @@ def create_app(agent=None) -> FastAPI:
         return {"ok": True}
 
     return app
+
+
+def main() -> None:
+    load_dotenv()
+    # Verify that API key is set before building the agent
+    if not os.getenv("GEMINI_API_KEY"):
+        print("GEMINI_API_KEY is not set. Copy .env.example to .env and set your API key.")
+        return
+    # Local only: read_input opens any file path it's given, so never expose this on a network
+    uvicorn.run(create_app(), host="127.0.0.1", port=8000)
+
+
+if __name__ == "__main__":
+    main()
