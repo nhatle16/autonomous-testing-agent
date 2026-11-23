@@ -16,9 +16,43 @@ function addMessage(role, text) {
   return el;
 }
 
-// Draw the reply text into its bubble
+// Draw the reply into its bubble: ``` fenced parts become code blocks, the rest stays text.
+// Only textContent is used, so code in a reply can never inject HTML.
 function render(el, text) {
-  el.textContent = text;
+  el.replaceChildren();
+  text.split("```").forEach((part, i) => {
+    if (i % 2 === 0) {
+      if (part.trim()) el.append(document.createTextNode(part.trim() + "\n"));
+      return;
+    }
+    // Drop the language tag on the fence line, e.g. "python"
+    const code = part.replace(/^[^\n]*\n/, "").replace(/\n$/, "");
+    el.append(codeBlock(code));
+  });
+}
+
+function codeBlock(code) {
+  const block = document.createElement("div");
+  block.className = "code-block";
+  const pre = document.createElement("pre");
+  const codeEl = document.createElement("code");
+  codeEl.textContent = code;
+  pre.append(codeEl);
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.className = "copy";
+  copy.textContent = "Copy";
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      copy.textContent = "Copied";
+    } catch {
+      copy.textContent = "Copy failed";
+    }
+    setTimeout(() => { copy.textContent = "Copy"; }, 1500);
+  });
+  block.append(pre, copy);
+  return block;
 }
 
 function setBusy(busy) {
