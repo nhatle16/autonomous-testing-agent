@@ -3,7 +3,7 @@ import time
 
 from langchain_core.messages import AIMessage
 
-from src.chat import loading, main, read_message
+from src.chat import iter_reply, loading, main, read_message
 
 
 # Simulate keyboard input
@@ -152,3 +152,22 @@ def test_loading_prints_nothing_outside_terminal(capsys):
         pass
 
     assert capsys.readouterr().out == ""
+
+
+# Streamed text comes first, then the full history including the reply
+def test_iter_reply_yields_text_then_history():
+    events = list(iter_reply(FakeAgent(), [], None))
+
+    assert events[0] == ("text", "reply")
+    kind, history = events[-1]
+    assert kind == "messages"
+    assert history[-1].text == "reply"
+
+
+# An agent that streams no text still yields the last message's text
+def test_iter_reply_falls_back_to_last_message():
+    class SilentAgent:
+        def stream(self, state, config=None, stream_mode=None):
+            yield ("values", {"messages": [AIMessage(content="final")]})
+
+    assert next(iter_reply(SilentAgent(), [], None)) == ("text", "final")
