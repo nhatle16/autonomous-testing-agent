@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test Drafter</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>Test Drafter</h1>
+    <button id="reset" type="button" class="secondary">New chat</button>
+  </header>
+  <main id="messages" aria-live="polite">
+    <p class="hint">Paste a Python function or a file path like
+      <code>src/samples/sample2.py</code>, and get a pytest draft back.
+      The tests are drafted only, never run.</p>
+  </main>
+  <form id="composer">
+    <label for="input" class="visually-hidden">Message</label>
+    <textarea id="input" rows="4" placeholder="Paste code or a path. Enter sends, Shift+Enter adds a line." required></textarea>
+    <button id="send" type="submit">Send</button>
+  </form>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,12 +1,16 @@
 import uuid
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from langchain.messages import HumanMessage
 from pydantic import BaseModel
 
 from src.agent import build_agent
 from src.chat import iter_reply
+
+STATIC_DIR = Path(__file__).parent / "static"
 
 
 class ChatRequest(BaseModel):
@@ -24,6 +28,12 @@ def create_app(agent=None) -> FastAPI:
     app = FastAPI(title="Test-drafting agent")
     # shortcut: in-memory history is lost on restart and grows unbounded; fine for local use
     sessions: dict[str, dict] = {}
+
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+    @app.get("/")
+    def index():
+        return FileResponse(STATIC_DIR / "index.html")
 
     def session(session_id):
         # Each session has its own history and a thread id grouping its turns in LangSmith

@@ -72,3 +72,13 @@ def test_sessions_are_separate():
     _send(client, "two", session_id="b")
 
     assert _message_counts(agent) == [1, 1]
+
+
+# The chat page and its static files are served
+def test_index_serves_chat_page():
+    client = _client(FakeAgent())
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert client.get("/static/style.css").status_code == 200
