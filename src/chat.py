@@ -64,26 +64,37 @@ def loading(text="Reasoning"):
         stop_animation()
 
 
+def iter_reply(agent, messages, config):
+    """Yield ("text", chunk) for each piece of reply text, then ("messages", history)
+    with the full conversation history, including this turn."""
+    # state holds the latest full agent state, streamed is True if any text was yielded
+    state, streamed = None, False
+    for mode, data in agent.stream({"messages": messages}, config=config,
+                                   stream_mode=["messages", "values"]):
+        if mode == "messages":
+            chunk, _metadata = data
+            if isinstance(chunk, AIMessage) and chunk.text:
+                yield "text", chunk.text
+                streamed = True
+        else:
+            state = data
+    # Send the last message in the state if no text was streamed
+    if not streamed:
+        yield "text", state["messages"][-1].text
+    yield "messages", state["messages"]
+
+
 def stream_reply(agent, messages, config):
-    # state holds the latest full agent state, printed is True if any streamed text reached the screen
-    state, printed = None, False
+    history = messages
     with loading() as stop_animation:
-        for mode, data in agent.stream({"messages": messages}, config=config,
-                                       stream_mode=["messages", "values"]):
-            if mode == "messages":
-                chunk, _metadata = data
-                if isinstance(chunk, AIMessage) and chunk.text:
-                    stop_animation()
-                    print(chunk.text, end="", flush=True)
-                    printed = True
+        for kind, data in iter_reply(agent, messages, config):
+            if kind == "text":
+                stop_animation()
+                print(data, end="", flush=True)
             else:
-                state = data
-    # Print the last message in the state if no text was streamed
-    if not printed:
-        print(state["messages"][-1].text, end="")
+                history = data
     print()
-    # Return the full conversation history, including this turn
-    return state["messages"]
+    return history
 
 
 def main(agent=None, input_fn=input) -> None:
