@@ -1,6 +1,6 @@
 # autonomous-testing-agent
 
-A command-line chat agent that drafts pytest tests for your Python functions. Paste a function, or
+A chat agent, in the terminal or the browser, that drafts pytest tests for your Python functions. Paste a function, or
 give a path to a `.py` file, and the agent replies with a test file plus a list of the assumptions
 it made.
 
@@ -92,6 +92,20 @@ Assumptions:
 The agent remembers the conversation, so you can follow up, for example "add a test for negative
 numbers", without pasting the code again.
 
+### Web chat
+
+```bash
+python -m src.web
+```
+
+Then open http://127.0.0.1:8000. Paste code or a path and press Enter (Shift+Enter adds a line).
+Replies stream in, and the test file shows as a code block with a Copy button. **New chat**
+clears the conversation; reloading the page also starts a new one.
+
+The server listens on `127.0.0.1` only. Don't expose it on a network: the agent reads any file
+path it's given, so anyone who could reach it could read files on your machine. Conversations are
+kept in memory and are lost when the server stops.
+
 For a single run without the chat, `python -m src.agent` drafts tests for `divide` in
 `src/samples/sample2.py` and prints the reply.
 
@@ -118,6 +132,8 @@ Tests replace Gemini with scripted fake models and fake agents, so they never ca
 src/
   agent.py              # system prompt, build_model(), build_agent()
   chat.py               # interactive chat loop
+  web.py                # FastAPI web chat: /, /api/chat, /api/reset
+  static/               # chat page: index.html, style.css, app.js
   tools/read_source.py  # read_input tool: parses code with ast
   samples/              # example input files
 tests/                  # pytest suite
